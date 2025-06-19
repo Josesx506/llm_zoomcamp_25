@@ -1,0 +1,25 @@
+{
+    "name": "Python setup with docker services like postgres and redis",
+    "dockerComposeFile": "docker-compose.yml",
+    "features": {
+        "ghcr.io/devcontainers-extra/features/poetry:2": {
+            "version": "latest"
+        }
+    },
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "ms-vscode-remote.remote-containers"
+            ],
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            }
+        }
+    },
+    "forwardPorts": [5432, 6379],
+    "postCreateCommand": "poetry install"
+}
