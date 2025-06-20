@@ -9,4 +9,6 @@ Given a dataframe / db of results with multiple fields, find a good way to searc
 4. Use sklearn to extract embeddings (smaller representation of the vector matrix) to optimize search
     - Compute scores using the condensed embedding matrices. You can also calculate across multiple fields/use weighted results.
     - Rank by similarity score and return search results
-5. Use BeRT or other transformer libraries to extract embeddings.
+5. Use BeRT or other transformer libraries to extract embeddings. Compute cosine similarity and view results too.
+
+Built using [tutorial](https://github.com/alexeygrigorev/build-your-own-search-engine).

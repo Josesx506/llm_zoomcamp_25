@@ -17,7 +17,8 @@ dependencies = [
     "transformers (>=4.52.4,<5.0.0)",
     "scikit-learn (>=1.7.0,<2.0.0)",
     "torch (==2.2.2)",
-    "numpy (==1.26.4)"
+    "numpy (==1.26.4)",
+    "dotenv (>=0.9.9,<0.10.0)"
 ]
 
 
