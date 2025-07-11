@@ -1,4 +1,4 @@
-from llmzmcp.module1.client import oaiclient as client
+from llmzmcp.shared import oaiclient as client
 
 
 def build_prompt(query, search_results):

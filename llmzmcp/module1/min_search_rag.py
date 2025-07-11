@@ -4,7 +4,7 @@ from pprint import pprint
 import minsearch
 
 from llmzmcp.data import load_rag_documents
-from llmzmcp.module1.client import oaiclient as client
+from llmzmcp.shared import oaiclient as client
 from llmzmcp.module1.utils import build_prompt, llm
 
 documents = load_rag_documents()

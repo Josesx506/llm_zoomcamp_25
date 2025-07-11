@@ -2,7 +2,7 @@ from elasticsearch import Elasticsearch
 from tqdm import tqdm
 
 from llmzmcp.data import load_rag_documents
-from llmzmcp.module1.client import esclient as es_client
+from llmzmcp.shared import esclient as es_client
 from llmzmcp.module1.utils import build_prompt, llm
 
 documents = load_rag_documents()

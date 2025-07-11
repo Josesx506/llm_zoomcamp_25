@@ -9,3 +9,11 @@ Create an openai api key at https://platform.openai.com/api-keys. Save a key in 
     - Docker is installed by default for codespaces
 
 - Vector search is a type of similarity search that converts, text, images, or any file formats into a vector. Search results are obtained by comparing and ranking similarity between vectors.
+
+
+### Types of Search to provide RAG context
+- Module 1
+    - Manual MinSearch (in-memory only)
+    - Elastic Search (persistent like a db)
+- Module 2
+    - Vector Search (persistent)
