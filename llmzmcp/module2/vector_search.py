@@ -70,7 +70,7 @@ else:
 
 
 ###########################################################################################
-# Search the db collection using the embedding point vectors
+# Search the db collection using the dense embedding point vectors
 ###########################################################################################
 def similarity_search(query, limit=1):
     """

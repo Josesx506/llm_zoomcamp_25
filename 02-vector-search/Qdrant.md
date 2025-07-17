@@ -59,3 +59,45 @@ When you're running Qdrant in Docker, the Web UI is available at http://localhos
 
 ### Vector Search RAG
 Once the search pipeline is setup, the search results can be passed as background context to an LLM for improving suggestions with RAG.
+
+
+### Sparse Search
+Qdrant allows us to generate sparse embeddings (mostly zeros) using statistical models like `bm25`. Unlike the dense embeddings used in vector search, sparse embeddings are useful for finding single words from documents e.g "pandas", "s3" etc. <br>
+When results don't match, search using sparse embeddings can return an empty list of results unlike vector embeddings. When the input query consists of multiple words like a sentence, sparse search isn't very performant. To optimize the blend between sparse and dense embeddings, we can implement hybrid search. <br>
+Qdrant's `.query_points` method allows building multi-step search pipelines which can incorporate various methods into a single call. For example, we can retrieve some candidates with dense vector search, and then rerank them with sparse search, or use a fast method for initial retrieval and precise, but slow, reranking.
+
+```ascii
+┌─────────────┐           ┌─────────────┐
+│             │           │             │
+│  Retrieval  │ ────────► │  Reranking  │
+│             │           │             │
+└─────────────┘           └─────────────┘
+```
+
+
+### Hybrid Search
+One approach for hybrid search is _reranking_. You can use a dense embedding model to retrieve excess search results, then use a sparse embedding 
+algorithm to rerank the returned results to get your final answer. e.g. Use dense embedding model to prefetch 10 results, use sparse model to rank and 
+return the top result. <br>
+Another approach to performing hybrid search is to do _fusion_. In fusion, both the dense, and sparse models, return equal number of results. e.g. 5 
+documents for both algorithms. Then the scores are merged. There are various ways of how to achieve that, but `Reciprocal Rank Fusion` is the most 
+popular technique. It is based on the rankings of the documents in each methods used, and these rankings are used to calculate the final scores. Qdrant 
+has built in capabilties to implement this and raw equations can be found online. An example is shown below 
+
+| Document | Dense ranking | Sparse ranking | RRF score | Final ranking |
+| --- | --- | --- | --- | --- |
+| D1 | **1** | 5 | 0.0318 | 2 |
+| D2 | 2 | 4 | 0.0317 | 3 |
+| D3 | 3 | 2 | 0.0320 | **1** |
+| D4 | 4 | 3 | 0.0315 | 5 |
+| D5 | 5 | **1** | 0.0318 | 2 |
+
+Documents _D1_ and _D5_ are ranked inverse to each other by both algorithms. When the scores are fused using RRF, document _D3_ emerges as the most 
+likely search result. <br>
+
+Reranking is a broader term related to Hybrid Search. Fusion is one of the ways to rerank the results of multiple methods, but you can also apply a 
+slower method that won't be effective enough to search over all the documents. But there is more to it. Business rules are often important for 
+retrieval, as you prefer to show documents coming from the most recent news, for instance. Dense and sparse vector search methods might not be enough 
+in some cases, but both are fast enough to be used as initial retrievers. Plenty of more accurate yet slower methods exist, such as cross-encoders or 
+[multivector representations](https://qdrant.tech/documentation/advanced-tutorials/using-multivector-representations/). These topics are definitely 
+more advanced, and we won't cover them right now. However, it's good to mention them so you are aware they exist.

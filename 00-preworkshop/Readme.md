@@ -11,4 +11,7 @@ Given a dataframe / db of results with multiple fields, find a good way to searc
     - Rank by similarity score and return search results
 5. Use BeRT or other transformer libraries to extract embeddings. Compute cosine similarity and view results too.
 
+>[!Note]
+> Cosine distance is limited to a range -1 to +1.
+
 Built using [tutorial](https://github.com/alexeygrigorev/build-your-own-search-engine).
