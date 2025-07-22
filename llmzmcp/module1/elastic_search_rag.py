@@ -89,14 +89,15 @@ def rag_elasticsearch(query):
 ###########################################################################################
 # Answer a question with context from the documents json
 ###########################################################################################
-print("Using document context with GPT-4o and elastic search db.\n\n")
+if __name__ == "__main__":
+    print("Using document context with GPT-4o and elastic search db.\n\n")
 
-query = 'how do I run kafka?'
-answer = rag_elasticsearch(query)
-print(f"Query: {query}")
-print(answer,"\n\n")
+    query = 'how do I run kafka?'
+    answer = rag_elasticsearch(query)
+    print(f"Query: {query}")
+    print(answer,"\n\n")
 
-query = 'the course has already started, can I still enroll?'
-answer = rag_elasticsearch(query)
-print(f"Query: {query}")
-print(answer)
+    query = 'the course has already started, can I still enroll?'
+    answer = rag_elasticsearch(query)
+    print(f"Query: {query}")
+    print(answer)

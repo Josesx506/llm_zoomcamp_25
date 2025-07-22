@@ -18,21 +18,6 @@ index.fit(documents)
 
 
 ###########################################################################################
-# Answer a question without providing context
-###########################################################################################
-q = 'the course has already started, can I still enroll?'
-
-response = client.chat.completions.create(
-    model='gpt-4o',
-    messages=[{"role": "user", "content": q}]
-)
-
-print("No context provided\n\n")
-print(f"Query: {q}")
-print(response.choices[0].message.content)
-
-
-###########################################################################################
 # utils
 ###########################################################################################
 def search_course(query:str, course:str='data-engineering-zoomcamp'):
@@ -55,18 +40,32 @@ def rag_minsearch(query):
 
 
 
+if __name__ == "__main__":
+    ###########################################################################################
+    # Answer a question without providing context
+    ###########################################################################################
+    q = 'the course has already started, can I still enroll?'
 
-###########################################################################################
-# Answer a question with context from the documents json
-###########################################################################################
-print("\n\nUsing document context with GPT-4o.\n\n")
+    response = client.chat.completions.create(
+        model='gpt-4o',
+        messages=[{"role": "user", "content": q}]
+    )
 
-query = 'how do I run kafka?'
-answer = rag_minsearch(query)
-print(f"Query: {query}")
-print(answer,"\n\n")
+    print("No context provided\n\n")
+    print(f"Query: {q}")
+    print(response.choices[0].message.content)
 
-query = 'the course has already started, can I still enroll?'
-answer = rag_minsearch(query)
-print(f"Query: {query}")
-print(answer)
+    ###########################################################################################
+    # Answer a question with context from the documents json
+    ###########################################################################################
+    print("\n\nUsing document context with GPT-4o.\n\n")
+
+    query = 'how do I run kafka?'
+    answer = rag_minsearch(query)
+    print(f"Query: {query}")
+    print(answer,"\n\n")
+
+    query = 'the course has already started, can I still enroll?'
+    answer = rag_minsearch(query)
+    print(f"Query: {query}")
+    print(answer)

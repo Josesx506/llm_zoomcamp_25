@@ -47,3 +47,11 @@ def load_ground_truth_questions():
     return df
 
 
+def load_llm_eval_dataframes(model_name):
+    """
+    Load results from different openai models used to evaluate model performance
+    """
+    assert model_name in ["gpt4o-mini","gpt4o","gpt35"], "Invalid model name. Valid values are [`gpt4o-mini`,`gpt4o`,`gpt35`]"
+    df = pd.read_csv(f'{data_dir()}/offline-res-{model_name}.csv')
+    
+    return df
