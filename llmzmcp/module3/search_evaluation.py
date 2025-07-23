@@ -10,6 +10,7 @@ import numpy as np
 from tqdm import tqdm
 
 from llmzmcp.data import load_eval_documents, load_ground_truth_questions
+from llmzmcp.module3.functions import evaluate_search
 from llmzmcp.shared import esclient as es_client
 
 # Load the eval documents that contain the document id
@@ -113,50 +114,6 @@ def minsearch_query(query:str, course:str='data-engineering-zoomcamp'):
 
     return results
 
-
-###########################################################################################
-# Define the metrics functions
-###########################################################################################
-def hit_rate(relevance_embedded_list):
-    cnt = 0
-
-    for line in relevance_embedded_list:
-        # line is an array of booleans that tells you whether 
-        # the correct document id was retrieved e.g. [False, False, True, False, False]
-        query_total = np.array(line).sum()
-        cnt += query_total
-
-    return cnt / len(relevance_embedded_list)
-
-
-def mrr(relevance_embedded_list):
-    total_score = 0.0
-
-    for line in relevance_embedded_list:
-        doc_relevance = np.array(line).astype(int)
-        doc_ranking = np.arange(len(doc_relevance))+1
-        doc_total = (doc_relevance/doc_ranking).sum()
-        total_score += doc_total
-
-    return total_score / len(relevance_embedded_list)
-
-
-def evaluate_search(ground_truth, search_function):
-    """
-    Evaluate either the Elastic search or min search algo.
-    """
-    relevance_list = []
-
-    for q in tqdm(ground_truth):
-        doc_id = q['document']
-        results = search_function(q)
-        relevance = [d['id'] == doc_id for d in results]
-        relevance_list.append(relevance)
-
-    return {
-        'hit_rate': round(hit_rate(relevance_list),3),
-        'mrr': round(mrr(relevance_list),3),
-    }
 
 # Evaluate both search functions
 es_res = evaluate_search(ground_truth, lambda q: elastic_search_query(q['question'], q['course']))

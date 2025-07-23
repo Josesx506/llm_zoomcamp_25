@@ -1,12 +1,12 @@
 from qdrant_client import models
 from tqdm import tqdm
 
-from llmzmcp.data import load_rag_documents
+from llmzmcp.data import load_eval_documents
 from llmzmcp.module1.utils import build_prompt, llm
 from llmzmcp.shared import qdclient as client
 
 # Create a collection that generates embeddings from both the question and text
-documents_raw = load_rag_documents()
+documents_raw = load_eval_documents()
 EMBEDDING_DIMENSIONALITY = 512
 
 model_handle = "jinaai/jina-embeddings-v2-small-en"
