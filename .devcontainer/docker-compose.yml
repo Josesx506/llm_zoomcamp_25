@@ -6,6 +6,11 @@ services:
     volumes:
       - ..:/workspace:cached
     command: sleep infinity
+    depends_on:
+      - db
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
     network_mode: service:db
   
   db:
@@ -52,9 +57,19 @@ services:
       - "6334:6334"
     volumes:
       - ./volumes/qdrantdata:/qdrant/storage
+  
+  ollama:
+    build:
+      context: ..
+      dockerfile: .devcontainer/ollama.Dockerfile
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
 
 # Named volumes are saved here. 
 # Path volumes with `./` and binded to local directories
 volumes:
   postgresdata:
-    
+  ollama_models:
+
