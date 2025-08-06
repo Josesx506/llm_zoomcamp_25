@@ -1,7 +1,11 @@
-import requests
-import pandas as pd
+from time import time
+
 import minsearch
+import pandas as pd
+import requests
+import tiktoken
 from prompts import wiki_prompt_template
+
 from llmzmcp.shared import oaiclient as client
 
 mindex = minsearch.Index(
@@ -39,24 +43,66 @@ def build_prompt(query:str, search_results:list, prompt_template:str):
     return prompt
 
 
-def llm(prompt):
-    response = requests.post("http://ollama:11434/api/chat", json={
-        "model": "gemma3:1b",
-        "messages": [{"role": "user", "content": prompt}],
-        "stream": False
-    })
-    return response.json()["message"]["content"]
+def token_counter(string:str, encoding_name:str="cl100k_base")->int:
+    """
+    Token estimator for chatgpt
+    """
+    encoding = tiktoken.get_encoding(encoding_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
 
-    # response = client.chat.completions.create(
-    #     model='gpt-4o-mini',
-    #     messages=[{"role": "user", "content": prompt}],
-    # )
+
+def calculate_openai_cost(model_choice, tokens):
+    openai_cost = 0
+
+    if model_choice == 'gpt-3.5-turbo':
+        openai_cost = (tokens['prompt_tokens'] * 0.0015 + tokens['completion_tokens'] * 0.002) / 1000
+    elif model_choice in ['gpt-4o', 'gpt-4o-mini']:
+        openai_cost = (tokens['prompt_tokens'] * 0.03 + tokens['completion_tokens'] * 0.06) / 1000
+
+    return openai_cost
+
+
+def llm(prompt, model="gemma3:1b"):
+    start_time = time()
+
+    match model:
+        case "gemma3:1b":
+            response = requests.post("http://ollama:11434/api/chat", json={
+                "model": "gemma3:1b",
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False
+            })
+            output = response.json()["message"]["content"]
+            prompt_tokens = token_counter(prompt)
+            completion_tokens = token_counter(output)
+            tokens = {
+                'prompt_tokens': prompt_tokens,
+                'completion_tokens': completion_tokens,
+                'total_tokens': prompt_tokens + completion_tokens
+            }
+        case _ if model.startswith("gpt"):
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            tokens = {
+                'prompt_tokens': response.usage.prompt_tokens,
+                'completion_tokens': response.usage.completion_tokens,
+                'total_tokens': response.usage.total_tokens
+            }
+            output = response.choices[0].message.content
+        case _:
+            output = "Invalid model name, no response provided"
     
-    # return response.choices[0].message.content
+    end_time = time()
+    resp_time = end_time - start_time
+
+    return output, tokens, resp_time
 
 
-def rag(query):
+def rag(query, model="gemma3:1b"):
     search = minsearch_query(query)
     prompt = build_prompt(query, search, wiki_prompt_template)
-    result = llm(prompt)
-    return result
+    result, tokens, resp_time = llm(prompt, model)
+    return result, tokens, resp_time

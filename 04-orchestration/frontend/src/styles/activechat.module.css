@@ -1,0 +1,68 @@
+.activeConversation {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 1em;
+    padding: 0.5em 1em;
+    width: min(100%, 800px);
+    height: 100%;
+    max-height: calc(100vh - 2.2rem);
+    margin: 0 auto;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.chatResults {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+    width: 100%;
+    scrollbar-width: none;
+    overflow-y: auto;
+    grid-row: 1;
+    min-height: 0;
+}
+
+.lowerRow {
+    grid-row: 2;
+    display: grid;
+    gap: 0.5em;
+    margin-bottom: 1em;
+    z-index: 2;
+}
+
+.chatForm {
+    max-width: 100%;
+    padding: 0.5em;
+    border: 1px solid black;
+    border-radius: 1em;
+    flex-shrink: 0;
+}
+
+.chattext {
+    width: 100%;
+    border: none;
+    line-height: 1.2;
+    font-size: 1.2em;
+    max-height: 400px;
+    resize: none;
+    &:focus {
+        outline: none;
+    }
+}
+
+.chatSubmit {
+    justify-self: end;
+    & > button {
+        padding: 0.25em 0.5em;
+        font-weight: 600;
+        border: 1px solid darkgray;
+        border-radius: 3em;
+    }
+}
+
+.disclaimer {
+    text-align: center;
+    font-weight: 400;
+    letter-spacing: 1.2;
+}

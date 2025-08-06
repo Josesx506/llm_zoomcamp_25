@@ -1,0 +1,24 @@
+.chatPage {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
+
+.navBar {
+    display: flex;
+    border-bottom: 1px solid var(--foreground);
+    padding: 0.5em;
+}
+
+.navLink {
+    font-weight: 600;
+}
+
+.chatPageCntr {
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    justify-content: flex-start;
+    height: 100%;
+}
+

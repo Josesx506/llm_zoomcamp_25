@@ -6,4 +6,4 @@ from fastapi import Depends
 from sqlmodel import Session
 
 SessionDep = Annotated[Session, Depends(get_session)]
-AuthKeyDep = Annotated[str, Depends(verify_api_key)]
+# AuthKeyDep = Annotated[str, Depends(verify_api_key)]
