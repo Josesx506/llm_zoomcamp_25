@@ -4,7 +4,9 @@ import minsearch
 import pandas as pd
 import requests
 import tiktoken
+from models import Messages
 from prompts import wiki_prompt_template
+from sqlmodel import Session
 
 from llmzmcp.shared import oaiclient as client
 
@@ -33,13 +35,52 @@ def minsearch_query(query:str):
     return results
 
 
-def build_prompt(query:str, search_results:list, prompt_template:str):
-    context = ""
+def get_recent_messages(session: Session, conv_id: int, limit: int = 3):
+    """
+    Get recent messages for conversation history context
+    """
+    return (
+        session.query(Messages)
+        .with_entities(Messages.question, Messages.answer)
+        .filter(Messages.conv_id == conv_id)
+        .order_by(Messages.timestamp.desc())
+        .limit(limit)
+        .all()[::-1]# reverse to chronological order
+    )
+
+
+def build_prompt(query:str, history:list, search_results:list, prompt_template:str):
+    # context_parts = []
+
+    # # 1. Add historical Q&A when using api
+    # for msg in history:
+    #     context_parts.append(f"question: {msg.question}\nanswer: {msg.answer}")
+
+    # # 2. Add RAG results
+    # for doc in search_results:
+    #     context_parts.append(f"question: {doc['Question']}\nanswer: {doc['Answer']}")
+
+    # full_context = "\n\n".join(context_parts)
+    # prompt = prompt_template.format(question=query, context=full_context).strip()
     
-    for doc in search_results:
-        context = context + f"question: {doc['Question']}\nanswer: {doc['Answer']}\n\n"
-    
-    prompt = prompt_template.format(question=query, context=context).strip()
+
+    # Format chat history
+    chat_history = "\n".join(
+        f"User: {msg.question}\nAssistant: {msg.answer}" for msg in history
+    )
+
+    # Format RAG search context
+    rag_context = "\n\n".join(
+        f"Question: {doc['Question']}\nAnswer: {doc['Answer']}" for doc in search_results
+    )
+
+    # Final formatted prompt
+    prompt = prompt_template.format(
+        question=query,
+        history=chat_history,
+        context=rag_context
+    ).strip()
+
     return prompt
 
 
@@ -101,8 +142,8 @@ def llm(prompt, model="gemma3:1b"):
     return output, tokens, resp_time
 
 
-def rag(query, model="gemma3:1b"):
+def rag(query:str, history:list=[], model:str="gemma3:1b"):
     search = minsearch_query(query)
-    prompt = build_prompt(query, search, wiki_prompt_template)
+    prompt = build_prompt(query, history, search, wiki_prompt_template)
     result, tokens, resp_time = llm(prompt, model)
     return result, tokens, resp_time

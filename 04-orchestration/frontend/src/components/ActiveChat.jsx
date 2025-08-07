@@ -3,15 +3,50 @@
 import ChatMessage from '@/components/ChatMessage';
 import styles from '@/styles/activechat.module.css';
 import Form from 'next/form';
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import TextareaAutosize from 'react-textarea-autosize';
 
-export default function ActiveChat() {
+export default function ActiveChat({ conv_id }) {
+  const [conversationId, setConversationId] = useState(conv_id);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const textInputRef = useRef();
   const newMsgRef = useRef();
+
+  useEffect(() => { // Retrieve existing messages
+    if (!conv_id) return;
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    async function fetchMessages() {
+      try {
+        setLoading(true);
+        const res = await fetch(`http://127.0.0.1:8000/conversations/${conv_id}/messages`, {
+          signal: signal,
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || "Failed to fetch messages");
+        }
+
+        const data = await res.json();
+        setMessages(data.messages);
+      } catch (err) {
+        if (err?.code !== "ERR_CANCELED" && err.name !== "AbortError") {
+          toast.error(err.message || "Failed to load conversation history");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+    return () => { controller.abort() };
+  }, [conv_id]);
 
   useEffect(() => {
     // Scroll to the bottom of the chats
@@ -26,19 +61,30 @@ export default function ActiveChat() {
 
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:8000/generate", {
+      const payload = { prompt: query };
+      if (conversationId) { // include conv_id for existing conversations
+        payload.conversation_id = conversationId;
+      }
+      const res = await fetch("http://127.0.0.1:8000/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: query })
+        body: JSON.stringify(payload)
       });
-      
-      if (!response.ok) { // Catch non-2xx status code and throw errors
-        const errorData = await response.json();
+
+      if (!res.ok) { // Catch non-2xx status code and throw errors
+        const errorData = await res.json();
         throw new Error(errorData.detail || `Server error: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await res.json();
       data["query"] = query;
+
+      // Update conversation ID if starting a new conversation
+      if (!conversationId && data.conversation_id) {
+        setConversationId(data.conversation_id);
+        router.push(`/chat/${data.conversation_id}`)
+      }
+
       setMessages((prev) => [...prev, data])
 
     } catch (err) {
@@ -47,15 +93,14 @@ export default function ActiveChat() {
       }
     } finally {
       setLoading(false);
-      // Reset form text
-      textInputRef.current.value = "";
+      textInputRef.current.value = ""; // Reset form text
     }
   }
 
   return (
     <div className={styles.activeConversation}>
       <div className={styles.chatResults}>
-        {messages.map((msg) => (<ChatMessage key={msg.id} {...msg} />))}
+        {messages.map((msg) => (<ChatMessage key={msg.msg_id} {...msg} />))}
         <div id='newmsg' ref={newMsgRef} />
       </div>
       <div className={styles.lowerRow}>

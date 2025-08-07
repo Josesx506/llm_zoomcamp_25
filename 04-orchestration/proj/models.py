@@ -2,7 +2,12 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel
+
+from typing import Optional, List
+from fastapi import HTTPException
+from sqlmodel import Field, Session, SQLModel, Relationship
+from sqlalchemy import ForeignKey
 
 
 class CustomModel(SQLModel):
@@ -47,8 +52,14 @@ class CustomModel(SQLModel):
             raise HTTPException(status_code=500, detail=f"Database delete error: {e}")
 
 
-
 class Conversations(CustomModel, table=True):
+    title: str = Field(index=False)
+    messages: List["Messages"] = Relationship(back_populates="conversation")
+    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class Messages(CustomModel, table=True):
+    conv_id: int = Field(foreign_key="conversations.id", index=True)
     question: str = Field(index=False)
     answer: str = Field(index=False)
     model_used: str = Field(index=False)
@@ -60,8 +71,7 @@ class Conversations(CustomModel, table=True):
     eval_completion_tokens: int | None = Field(default=0, index=False)
     eval_total_tokens: int | None = Field(default=0, index=False)
     openai_cost: float | None = Field(default=0, index=False)
+    # New column for feedback: like (1), dislike (-1), neutral (0 or None)
+    like_dislike: Optional[int] = Field(default=0, description="1=like, -1=dislike, 0/None=neutral")
+    conversation: Optional[Conversations] = Relationship(back_populates="messages") # Relationship to parent conversation
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-
-class Sample(CustomModel, table=True):
-    answer: str = Field(index=False)
