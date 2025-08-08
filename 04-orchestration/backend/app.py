@@ -33,7 +33,7 @@ class PromptRequest(BaseModel):
 async def lifespan(app: FastAPI):
     # Startup events
     create_db_and_tables()
-    load_and_index_documents("mini_wiki.csv")
+    docs = load_and_index_documents("mini_wiki.csv")
     yield  # The application will run here
     # Shutdown events
     print("Application shutting down...")
@@ -87,6 +87,44 @@ async def get_conversation_messages(conv_id: int, session: SessionDep):
         raise HTTPException(status_code=404, detail=f"Error retrieving conversation: {str(e)}")
 
 
+@app.get("/conversations/{conv_id}/{msg_id}/upvote")
+async def upvote_response(conv_id:int, msg_id:int, session:SessionDep):
+    """
+    Upvote a query response
+    """
+    try:
+        message = (
+            session.query(Messages)
+            .filter(Messages.conv_id == conv_id, Messages.id == msg_id)
+            .first()
+        )
+        if message.like_dislike < 1:
+            message.like_dislike += 1
+        message.update(session)
+        return {"vote": message.like_dislike}
+    except requests.RequestException as e:
+        raise HTTPException(status_code=404, detail=f"Error upvoting response: {str(e)}")
+
+
+@app.get("/conversations/{conv_id}/{msg_id}/downvote")
+async def downvote_response(conv_id:int, msg_id:int, session:SessionDep):
+    """
+    Downvote a query response
+    """
+    try:
+        message = (
+            session.query(Messages)
+            .filter(Messages.conv_id == conv_id, Messages.id == msg_id)
+            .first()
+        )
+        if message.like_dislike > -1:
+            message.like_dislike -= 1
+        message.update(session)
+        return {"vote": message.like_dislike}
+    except requests.RequestException as e:
+        raise HTTPException(status_code=404, detail=f"Error upvoting response: {str(e)}")
+
+
 @app.post("/generate")
 @limiter.limit("10/minute")
 async def generate(data: PromptRequest, request: Request, session: SessionDep):
@@ -94,7 +132,7 @@ async def generate(data: PromptRequest, request: Request, session: SessionDep):
     Save an active conversationn message
     """
     try:
-        model = "gemma3:1b"
+        model = "gpt-4o-mini" # "gemma3:1b" #
 
         # Handle conversation (new or existing)
         if data.conversation_id:
@@ -134,21 +172,6 @@ async def generate(data: PromptRequest, request: Request, session: SessionDep):
 
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Error communicating with LLM: {str(e)}")
-
-
-# async def generate(data:PromptRequest, request:Request, session: SessionDep):
-#     try:
-#         model = "gemma3:1b"# "gpt-4o-mini"# 
-#         resp, tokens, resp_time = rag(data.prompt,model)
-#         cost = calculate_openai_cost(model, tokens)
-#         new_sample_entry = Conversations(question=data.prompt,answer=resp,
-#                                          model_used=model,response_time=resp_time,
-#                                          openai_cost=cost, **tokens)
-#         new_sample_entry.insert(session)
-#         return {"response":resp, "id": new_sample_entry.id}
-#     except requests.RequestException as e:
-#         raise HTTPException(status_code=500, detail=f"Error communicating with llm: {str(e)}")
-
 
 
 if __name__ == "__main__":

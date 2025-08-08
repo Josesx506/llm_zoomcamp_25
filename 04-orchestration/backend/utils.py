@@ -2,6 +2,7 @@ from time import time
 
 import minsearch
 import pandas as pd
+import numpy as np
 import requests
 import tiktoken
 from models import Messages
@@ -18,9 +19,10 @@ mindex = minsearch.Index(
 
 def load_and_index_documents(file_path:str):
     file = pd.read_csv(file_path)
+    file["id"] = np.arange(len(file))+1
     documents = file.to_dict(orient="records")
     mindex.fit(documents)
-    return True
+    return documents
 
 
 def minsearch_query(query:str):
@@ -49,21 +51,7 @@ def get_recent_messages(session: Session, conv_id: int, limit: int = 3):
     )
 
 
-def build_prompt(query:str, history:list, search_results:list, prompt_template:str):
-    # context_parts = []
-
-    # # 1. Add historical Q&A when using api
-    # for msg in history:
-    #     context_parts.append(f"question: {msg.question}\nanswer: {msg.answer}")
-
-    # # 2. Add RAG results
-    # for doc in search_results:
-    #     context_parts.append(f"question: {doc['Question']}\nanswer: {doc['Answer']}")
-
-    # full_context = "\n\n".join(context_parts)
-    # prompt = prompt_template.format(question=query, context=full_context).strip()
-    
-
+def build_prompt(query:str, history:list, search_results:list, prompt_template:str): 
     # Format chat history
     chat_history = "\n".join(
         f"User: {msg.question}\nAssistant: {msg.answer}" for msg in history

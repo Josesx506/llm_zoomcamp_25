@@ -1,6 +1,7 @@
 'use client';
 
 import HistoryBtn from '@/components/HistoryBtn';
+import { API_BASE_URL } from '@/lib/config';
 import styles from '@/styles/history.module.css';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -18,7 +19,7 @@ export default function History() {
     async function fetchConversations() {
       try {
         setLoading(true);
-        const res = await fetch(`http://127.0.0.1:8000/conversations`, { signal: signal });
+        const res = await fetch(`${API_BASE_URL}/conversations`, { signal: signal });
 
         if (!res.ok) {
           const errorData = await res.json();

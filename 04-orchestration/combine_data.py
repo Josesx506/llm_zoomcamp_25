@@ -9,4 +9,4 @@ mini_wiki["ArticleTitle"] = mini_wiki["ArticleTitle"].apply(lambda title: " ".jo
 mini_wiki = mini_wiki.dropna(subset="Answer")
 mini_wiki = mini_wiki.sort_values(by="ArticleTitle").reset_index(drop=True) 
 
-mini_wiki.to_csv("mini_wiki.csv",index=False)
+mini_wiki.to_csv("backend/mini_wiki.csv",index=False)

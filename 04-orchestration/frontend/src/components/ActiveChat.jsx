@@ -1,6 +1,7 @@
 'use client';
 
 import ChatMessage from '@/components/ChatMessage';
+import { API_BASE_URL } from '@/lib/config';
 import styles from '@/styles/activechat.module.css';
 import Form from 'next/form';
 import { useRouter } from "next/navigation";
@@ -24,7 +25,7 @@ export default function ActiveChat({ conv_id }) {
     async function fetchMessages() {
       try {
         setLoading(true);
-        const res = await fetch(`http://127.0.0.1:8000/conversations/${conv_id}/messages`, {
+        const res = await fetch(`${API_BASE_URL}/conversations/${conv_id}/messages`, {
           signal: signal,
         });
 
@@ -65,7 +66,7 @@ export default function ActiveChat({ conv_id }) {
       if (conversationId) { // include conv_id for existing conversations
         payload.conversation_id = conversationId;
       }
-      const res = await fetch("http://127.0.0.1:8000/generate", {
+      const res = await fetch(`${API_BASE_URL}/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -73,7 +74,7 @@ export default function ActiveChat({ conv_id }) {
 
       if (!res.ok) { // Catch non-2xx status code and throw errors
         const errorData = await res.json();
-        throw new Error(errorData.detail || `Server error: ${response.status}`);
+        throw new Error(errorData.detail || `Server error: ${res.status}`);
       }
 
       const data = await res.json();
@@ -100,7 +101,7 @@ export default function ActiveChat({ conv_id }) {
   return (
     <div className={styles.activeConversation}>
       <div className={styles.chatResults}>
-        {messages.map((msg) => (<ChatMessage key={msg.msg_id} {...msg} />))}
+        {messages.map((msg) => (<ChatMessage key={msg.msg_id} conv_id={conv_id} {...msg} />))}
         <div id='newmsg' ref={newMsgRef} />
       </div>
       <div className={styles.lowerRow}>
