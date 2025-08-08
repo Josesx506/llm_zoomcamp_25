@@ -54,12 +54,12 @@ class CustomModel(SQLModel):
 
 class Conversations(CustomModel, table=True):
     title: str = Field(index=False)
-    messages: List["Messages"] = Relationship(back_populates="conversation")
+    messages: List["Messages"] = Relationship(back_populates="conversation", cascade_delete=True)
     timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class Messages(CustomModel, table=True):
-    conv_id: int = Field(foreign_key="conversations.id", index=True)
+    conv_id: int = Field(foreign_key="conversations.id", ondelete="CASCADE", index=True)
     question: str = Field(index=False)
     answer: str = Field(index=False)
     model_used: str = Field(index=False)

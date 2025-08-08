@@ -41,6 +41,11 @@ export default function History() {
     return () => { controller.abort() };
   }, []);
 
+  function deleteConversation(conv_id) {
+    const remaining = convos.filter((conv)=>(conv.conv_id!=conv_id))
+    setConvos(remaining);
+  }
+
   return (
     <aside className={styles.chatHistory}>
       <div className={styles.newChat}>
@@ -51,7 +56,7 @@ export default function History() {
       <div className={styles.prevChats}>
         <h3>Chats</h3>
         <div className={styles.prevChatList}>
-          {convos.map((conv)=>(<HistoryBtn key={conv.conv_id} {...conv} />))}
+          {convos.map((conv)=>(<HistoryBtn key={conv.conv_id} updateConvoList={deleteConversation} {...conv} />))}
         </div>
       </div>
     </aside>

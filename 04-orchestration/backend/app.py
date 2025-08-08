@@ -106,6 +106,21 @@ async def upvote_response(conv_id:int, msg_id:int, session:SessionDep):
         raise HTTPException(status_code=404, detail=f"Error upvoting response: {str(e)}")
 
 
+@app.delete("/conversations/{conv_id}/")
+async def delete_conversation(conv_id:int, session:SessionDep):
+    """
+    Delete a conversation history
+    """
+    try:
+        conv = session.get(Conversations, conv_id)
+        if not conv:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        conv.delete(session)
+        return {"data": f"Conversation {conv_id} deleted successfully"}
+    except requests.RequestException as e:
+        raise HTTPException(status_code=404, detail=f"Error delete conversation: {str(e)}")
+    
+
 @app.get("/conversations/{conv_id}/{msg_id}/downvote")
 async def downvote_response(conv_id:int, msg_id:int, session:SessionDep):
     """
