@@ -25,6 +25,18 @@ services:
     volumes:
       - postgresdata:/var/lib/postgresql/data
   
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3500:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./volumes/grafana:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+    depends_on:
+      - db
+  
   # redis:
   #   image: "redis:alpine"
   #   environment:
@@ -72,4 +84,5 @@ services:
 volumes:
   postgresdata:
   ollama_models:
+  grafana_data:
 

@@ -1,31 +1,34 @@
-### Problem description
-This application provides RAG context for a mini-wikipedia problem. It uses a 
-[Question-Answer Dataset](https://www.kaggle.com/datasets/rtatman/questionanswer-dataset/data) 
-that was generated using cleaned text from Wikipedia articles. The dataset for different years 
-(2008 - 2010) was downloaded as separate text files and cleaned and merged into a single csv.
-Preprocessing steps included removing duplicates and simple formatting changes. Check 
-[combine_data.py](./combine_data.py) to generate the main dataset. In production I used  `gpt-4o-mini` and in development, I used `gemma3:1b` with an ollama server running in a 
-devcontainer with docker.
+Monitoring was primarily applied in the capstone project. Check out the repo for additional 
+details. Monitoring dashboards used grafana with docker for a mini-wiki RAG implementation 
+[capstone link](https://github.com/Josesx506/llmzoomcamp-capstone). 
 
-### Retrieval flow
-Data is ingested into a minsearch in-memory index using a python script. For each query, the top 
-5 search results from the knowledge base are provided as context to an LLM. The LLM reviews the 
-index and provides a response to the query.
+### Interface
+The app interface is built with a mixture of a fastapi backend api service, and a Next.js frontend 
+service. 
 
-### Retrieval evaluation
-The retrieval performance is evaluated using the `hit rate` and `MRR`. For each Q-A pair, we 
-compare the document ids (`ArticleFile`) in the retrieval response. You can run the workflow in 
-the [evaluate_search.py](./backend/evaluate_search.py) script with `poetry run python evaluate_search.py `
+<div align="center">
+  <img style="object-fit: contain; width: 700px; height: auto;"  src='./imgs/ui_interface.png'><br>
+  <span>UI Interface</span>
+</div>
+<br>
 
+Conversation history from most recent 3 messages in a conversation is also passed to the prompt to 
+maintain context for a conversation style experience. This is a ***sliding window*** approach where 
+the oldest message is replaced for historical context. Without this, each query starts with a new 
+state and can't follow logic from previous messages. Longer conversation histories consumes tokens 
+faster.
 
-Launch server `poetry run uvicorn app:app --reload`
-
-Question - Answer Mini-wiki RAG
-
-
-### Offline Eval - (Cosine similarity between ground truth and llm answers).
-- The mean cosine similarity for gemma3:1b is 0.283
-- The mean cosine similarity for gpt-4o-mini is 0.248
-
->[!Note]
-> Ground truth answers are overly simplified for the dataset including one word answers like yes/no without including additional context that the LLM provides which decreases performance metrics.
+### Monitoring
+Monitoring dashboard implemented with Grafana. To access the grafana dashboard from the local docker 
+network, navigate to http://localhost:3500/ in your browser. The dashboard is not implemented on my 
+production server because it gives access to my db.
+```json
+{
+  "username": "admin",
+  "password": "12345"
+}
+```
+<div align="center">
+  <img style="object-fit: contain; width: 700px; height: auto;"  src='./imgs/grafana_dashboard.png'><br>
+  <span>Grafana Dashboard display</span>
+</div>

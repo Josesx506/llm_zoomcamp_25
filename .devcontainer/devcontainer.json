@@ -21,5 +21,8 @@
         }
     },
     "forwardPorts": [5432, 6379, 9200, 6333, 11434],
+    "portsAttributes": {
+        ".*": { "onAutoForward": "ignore" }
+    },
     "postCreateCommand": "poetry install"
 }
